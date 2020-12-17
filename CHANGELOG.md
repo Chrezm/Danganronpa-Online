@@ -476,5 +476,5 @@
 * Fixed allowing zero-width characters in OOC names and shownames
 * Fixed illegal OOC names being associated with clients, even after being notified they are invalid
 
-### 201216a (4.2.5-post5)
+### 201217a (4.2.5-post5)
 * Backported 4.3.0 recognition of DRO 1.0.0 protocol and clearing of IC on area changes/blinding
