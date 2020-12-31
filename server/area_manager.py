@@ -324,7 +324,7 @@ class AreaManager:
 
         def is_char_available(self, char_id, allow_restricted=False, more_unavail_chars=None):
             """
-            Decide whether a character can be selected in the current area.
+            Dechar_ide whether a character can be selected in the current area.
 
             Parameters
             ----------
@@ -654,8 +654,8 @@ class AreaManager:
 
             if 'name' not in pargs:
                 pargs['name'] = name
-            if 'cid' not in pargs:
-                pargs['cid'] = client.char_id
+            if 'char_id' not in pargs:
+                pargs['char_id'] = client.char_id
             pargs['showname'] = client.showname # Ignore AO shownames
             if 'loop' not in pargs:
                 pargs['loop'] = -1
@@ -664,19 +664,18 @@ class AreaManager:
             if 'effects' not in pargs:
                 pargs['effects'] = 0
 
-            def loop(cid):
+            def loop(char_id):
                 for client in self.clients:
                     loop_pargs = pargs.copy()
-                    loop_pargs['cid'] = cid # Overwrite in case cid changed (e.g., server looping)
-                    _, to_send = client.prepare_command('MC', loop_pargs)
-                    client.send_command('MC', *to_send)
+                    loop_pargs['char_id'] = char_id # Overwrite in case char_id changed (e.g., server looping)
+                    client.send_command_dict('MC', loop_pargs)
 
                 if self.music_looper:
                     self.music_looper.cancel()
                 if length > 0:
                     f = lambda: loop(-1) # Server should loop now
                     self.music_looper = asyncio.get_event_loop().call_later(length, f)
-            loop(pargs['cid'])
+            loop(pargs['char_id'])
 
             # Record the character name and the track they played.
             self.current_music_player = client.displayname
@@ -692,7 +691,7 @@ class AreaManager:
                                        .format(client.displayname, client.id, client.area.id),
                                        is_zstaff=True)
 
-        def play_music(self, name, cid, length=-1, showname=''):
+        def play_music(self, name, char_id, length=-1, showname=''):
             """
             Start playing a music track in an area.
 
@@ -700,14 +699,14 @@ class AreaManager:
             ----------
             name: str
                 Name of the track to play.
-            cid: int
+            char_id: int
                 Character ID of the player who played the track, or -1 if the server initiated it.
             length: int
                 Length of the track in seconds to allow for seamless server-managed looping.
                 Defaults to -1 (no looping).
             """
 
-            self.send_command('MC', name, cid, showname)
+            self.send_command('MC', name, char_id, showname)
 
             if self.music_looper:
                 self.music_looper.cancel()
@@ -1099,7 +1098,7 @@ class AreaManager:
             self.server.default_area = 0
 
         for area in old_areas:
-            # Decide whether the area still exists or not
+            # Dechar_ide whether the area still exists or not
             try:
                 new_area = self.get_area_by_name(area.name)
                 remains = True

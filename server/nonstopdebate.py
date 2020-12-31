@@ -61,9 +61,9 @@ class NonStopDebate(TrialMinigame):
         Method to perform once a client entered an area of the game.
     _on_area_destroyed
         Method to perform once an area of the game is marked for destruction.
-    _on_client_send_ic_check
+    _on_client_inbound_ms_check
         Method to perform once a player of the game wants to send an IC message.
-    _on_client_send_ic
+    _on_client_inbound_ms
         Method to perform once a player of the game sends an IC message.
     _on_client_change_character
         Method to perform once a player of the game has changed character.
@@ -692,7 +692,7 @@ class NonStopDebate(TrialMinigame):
             player.send_command('TSF', self._client_timer_id,
                                 round(0.016*1000))
 
-    def _on_area_client_send_ic_check(self, area, client=None, contents=None):
+    def _on_area_client_inbound_ms_check(self, area, client=None, contents=None):
         """
         Check if any of the following situations occur:
         * If the user is not part of the nonstop debate.
@@ -722,7 +722,7 @@ class NonStopDebate(TrialMinigame):
         if not self.is_player(client):
             raise ClientError('You are not a player of this nonstop debate.')
 
-    def _on_client_send_ic_check(self, player, contents=None):
+    def _on_client_inbound_ms_check(self, player, contents=None):
         """
         Check if any of the following situations occur:
         * If they want to send a message with a bullet other than consent/counter at any point.
@@ -769,7 +769,7 @@ class NonStopDebate(TrialMinigame):
             func = lambda c: 8 if c in {player}.union(self.get_leaders()) else 7
             contents['PER_CLIENT_button'] = func
 
-    def _on_client_send_ic(self, player, contents=None):
+    def _on_client_inbound_ms(self, player, contents=None):
         """
         Add message of player to record of messages.
 

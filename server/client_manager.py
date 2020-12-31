@@ -156,7 +156,13 @@ class ClientManager:
             else:
                 self.send_raw_message('{}#%'.format(command))
 
-        def prepare_command(self, identifier, pargs):
+        def send_command_dict(self, command, dargs):
+            _, to_send = self.prepare_command(command, dargs)
+            self.send_command(command, *to_send)
+            self.publisher.publish(f'client_outbound_{command.lower()}',
+                                   {'contents': dargs.copy()})
+
+        def prepare_command(self, identifier, dargs):
             """
             Prepare a packet so that the client's specific protocol can recognize it.
 
@@ -164,33 +170,33 @@ class ClientManager:
             ----------
             identifier : str
                 ID of the packet to send.
-            pargs : dict of str to Any
+            dargs : dict of str to Any
                 Original packet arguments, which will be modified to satisfy the client's protocol.
                 Map is of argument name to argument value.
 
             Returns
             -------
-            final_pargs : dict of str to Any
+            final_dargs : dict of str to Any
                 Modified packet arguments. Map is of argument name to argument value.
             to_send : list of str
                 Packet argument values listed in the order the client protocol expects.
 
             """
 
-            final_pargs = dict()
+            final_dargs = dict()
             to_send = list()
 
             outbound_args = self.packet_handler['{}_OUTBOUND'.format(identifier.upper())].value
 
             for (field, default_value) in outbound_args:
                 try:
-                    value = pargs[field]
+                    value = dargs[field]
                 except KeyError:  # If the key was popped/is missing, use defaults then
                     value = default_value
                 to_send.append(value)
-                final_pargs[field] = value
+                final_dargs[field] = value
 
-            return final_pargs, to_send
+            return final_dargs, to_send
 
         def send_ooc(self, msg, username=None, allow_empty=False,
                      is_staff=None, is_officer=None, in_area=None, not_to=None, part_of=None,
@@ -239,7 +245,7 @@ class ClientManager:
         def send_ic(self, params=None, sender=None, pred=None, not_to=None, gag_replaced=False,
                     is_staff=None, in_area=None, to_blind=None, to_deaf=None,
                     bypass_replace=False, bypass_deafened_starters=False,
-                    msg=None, pos=None, cid=None, ding=None, color=None, showname=None):
+                    msg=None, pos=None, char_id=None, ding=None, color=None, showname=None):
 
             # sender is the client who sent the IC message
             # self is who is receiving the IC message at this particular moment
@@ -260,7 +266,7 @@ class ClientManager:
             if params is None:
                 pargs['msg'] = msg
                 pargs['pos'] = pos
-                pargs['cid'] = cid
+                pargs['char_id'] = char_id
                 pargs['ding'] = ding
                 pargs['color'] = color
                 pargs['showname'] = showname
@@ -332,7 +338,7 @@ class ClientManager:
                         self.last_received_ic_notme = [None, None, None]
                         self.last_received_ic = [None, None, None]
                     # If last sender has changed character, do not show previous sender
-                    elif ((last_apparent_sender.char_id != last_apparent_args['cid'] or
+                    elif ((last_apparent_sender.char_id != last_apparent_args['char_id'] or
                            last_apparent_sender.char_folder != last_apparent_args['folder'])):
                         # We need to check for iniswaps as well, to account for this possibility:
                         # 1. A and B are in the same room. A as in first person mode
@@ -469,7 +475,7 @@ class ClientManager:
         def send_ic_others(self, params=None, sender=None, bypass_replace=False,
                            bypass_deafened_starters=False, pred=None, not_to=None,
                            gag_replaced=False, is_staff=None, in_area=None, to_blind=None,
-                           to_deaf=None,  msg=None, pos=None, cid=None, ding=None, color=None,
+                           to_deaf=None,  msg=None, pos=None, char_id=None, ding=None, color=None,
                            showname=None):
 
             if not_to is None:
@@ -482,7 +488,7 @@ class ClientManager:
                           bypass_deafened_starters=bypass_deafened_starters,
                           pred=pred, not_to=not_to, gag_replaced=gag_replaced, is_staff=is_staff,
                           in_area=in_area, to_blind=to_blind, to_deaf=to_deaf,
-                          msg=msg, pos=pos, cid=cid, ding=ding, color=color, showname=showname)
+                          msg=msg, pos=pos, char_id=char_id, ding=ding, color=color, showname=showname)
 
         def send_ic_attention(self):
             self.send_ic(msg='(Something catches your attention)', ding=1)
@@ -601,14 +607,17 @@ class ClientManager:
             self.char_id = char_id
             self.char_folder = self.get_char_name()  # Assumes players are not iniswapped initially
             self.pos = ''
-            self.send_command('PV', self.id, 'CID', self.char_id)
-
             if announce_zwatch:
                 self.send_ooc_others('(X) Client {} has changed from character `{}` to `{}` in '
                                      'your zone ({}).'
                                      .format(self.id, old_char, self.char_folder, self.area.id),
                                      is_zstaff=target_area)
 
+            self.send_command_dict('PV', {
+                'client_id': self.id,
+                'char_id_tag': 'CID',
+                'char_id': self.char_id,
+                })
             self.publisher.publish('client_change_character', {
                 'old_char_id': old_char_id,
                 'new_char_id': char_id,

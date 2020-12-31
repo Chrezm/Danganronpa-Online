@@ -378,21 +378,22 @@ class AOProtocol(asyncio.Protocol):
         CC#<client_id:int>#<char_id:int>#<hdid:string>#%
 
         """
-        if not self.validate_net_cmd(args, ArgType.INT, ArgType.INT, ArgType.STR,
-                                     needs_auth=False):
+
+        pargs = self.process_arguments('cc', args, needs_auth=False)
+        if not pargs:
             return
-        cid = args[1]
+        char_id = pargs['char_id']
 
         ever_chose_character = self.client.ever_chose_character  # Store for later
         try:
-            self.client.change_character(cid)
+            self.client.change_character(char_id)
         except ClientError:
             return
         self.client.last_active = Constants.get_time()
 
         if not ever_chose_character:
-            self.client.send_command('GM', '')
-            self.client.send_command('TOD', '')
+            self.client.send_command_dict('GM', {'name': ''})
+            self.client.send_command_dict('TOD', {'name': ''})
 
     def net_cmd_ms(self, args):
         """ IC message.
@@ -434,7 +435,7 @@ class AOProtocol(asyncio.Protocol):
             return
         if pargs['anim_type'] not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
             return
-        if pargs['cid'] != self.client.char_id:
+        if pargs['char_id'] != self.client.char_id:
             return
         if pargs['sfx_delay'] < 0:
             return
@@ -459,7 +460,7 @@ class AOProtocol(asyncio.Protocol):
 
         # Make sure the areas are ok with this
         try:
-            self.client.area.publisher.publish('area_client_send_ic_check', {
+            self.client.area.publisher.publish('area_client_inbound_ms_check', {
                 'client': self.client,
                 'contents': pargs,
                 })
@@ -469,7 +470,7 @@ class AOProtocol(asyncio.Protocol):
 
         # Make sure the clients are ok with this
         try:
-            self.client.publisher.publish('client_send_ic_check', {
+            self.client.publisher.publish('client_inbound_ms_check', {
                 'contents': pargs,
                 })
         except TsuserverException as ex:
@@ -604,7 +605,7 @@ class AOProtocol(asyncio.Protocol):
                 pargs['offset_pair'] = 0
                 pargs['charid_pair_pair_order'] = -1
 
-        self.client.publisher.publish('client_send_ic', {'contents': pargs.copy()})
+        self.client.publisher.publish('client_inbound_ms', {'contents': pargs.copy()})
 
         for area_id in area_range:
             target_area = self.server.area_manager.get_area_by_id(area_id)
@@ -743,7 +744,7 @@ class AOProtocol(asyncio.Protocol):
             if not pargs:
                 return
 
-            if 'cid' not in pargs or int(pargs['cid']) != self.client.char_id:
+            if 'char_id' not in pargs or int(pargs['char_id']) != self.client.char_id:
                 return
             if self.client.change_music_cd():
                 self.client.send_ooc('You changed song too many times recently. Please try again '
@@ -771,20 +772,26 @@ class AOProtocol(asyncio.Protocol):
         if self.client.is_muted:  # Checks to see if the client has been muted by a mod
             self.client.send_ooc('You have been muted by a moderator.')
             return
-        if not self.validate_net_cmd(args, ArgType.STR):
-            return
-        if not args[0].startswith('testimony'):
+        pargs = self.process_arguments('rt', args)
+        if not pargs:
             return
         if not self.client.is_staff() and self.client.area.lobby_area:
             self.client.send_ooc('Judge buttons are disabled in this area.')
             return
 
-        self.client.area.send_command('RT', args[0])
-        self.client.area.add_to_judgelog(self.client, 'used judge button {}.'.format(args[0]))
-        logger.log_server('[{}]{} used judge button {}.'
-                          .format(self.client.area.id, self.client.get_char_name(), args[0]),
-                          self.client)
+        name = pargs['name']
         self.client.last_active = Constants.get_time()
+
+        for client in self.client.area.clients:
+            _, to_send = client.prepare_command('BN', pargs)
+            client.send_command('BN', *to_send)
+
+        self.client.area.send_command('RT', name)
+        self.client.publisher.publish('client_send_rt', {'contents': pargs.copy()})
+        self.client.area.add_to_judgelog(self.client, 'used judge button {}.'.format(name))
+        logger.log_server('[{}]{} used judge button {}.'
+                          .format(self.client.area.id, self.client.get_char_name(), name),
+                          self.client)
 
     def net_cmd_hp(self, args):
         """ Sets the penalty bar.

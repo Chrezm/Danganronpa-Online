@@ -655,7 +655,7 @@ class _TestClientManager(ClientManager):
                          'pos': 5,
                          'sfx': 6,
                          'anim_type': 7,
-                         'cid': 8,
+                         'char_id': 8,
                          'sfx_delay': 9,
                          'button': 10,
                          'evi': 11,
@@ -760,7 +760,7 @@ class _TestClientManager(ClientManager):
                 # 5 = pos
                 # 6 = sfx
                 # 7 = anim_type
-                # 8 = cid
+                # 8 = char_id
                 # 9 = sfx_delay
                 # 10 = button
                 # 11 = self.client.evi_list[evidence]

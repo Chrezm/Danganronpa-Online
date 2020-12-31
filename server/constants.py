@@ -81,7 +81,7 @@ class Clients():
             ('pos', ArgType.STR),  # 5
             ('sfx', ArgType.STR),  # 6
             ('anim_type', ArgType.INT),  # 7
-            ('cid', ArgType.INT),  # 8
+            ('char_id', ArgType.INT),  # 8
             ('sfx_delay', ArgType.INT),  # 9
             ('button', ArgType.INT),  # 10
             ('evidence', ArgType.INT),  # 11
@@ -99,7 +99,7 @@ class Clients():
             ('pos', 'jud'),  # 5
             ('sfx', 0),  # 6
             ('anim_type', 0),  # 7
-            ('cid', -1),  # 8
+            ('char_id', -1),  # 8
             ('sfx_delay', 0),  # 9
             ('button', 0),  # 10
             ('evidence', 0),  # 11
@@ -111,18 +111,39 @@ class Clients():
 
         MC_INBOUND = [
             ('name', ArgType.STR),  # 0
-            ('cid', ArgType.INT),  # 1
+            ('char_id', ArgType.INT),  # 1
             ]
 
         MC_OUTBOUND = [
             ('name', ''),  # 0
-            ('cid', -1),  # 1
+            ('char_id', -1),  # 1
             ('showname', ''),  # 2
             ]
 
         BN_OUTBOUND = [
             ('name', ''),  # 0
             ]
+
+        CC_INBOUND = [
+            ('client_id', 0),
+            ('char_id', '1'),
+            ('hdid', ''),
+            ]
+
+        PV_OUTBOUND = [
+            ('client_id', 0),  # 0
+            ('char_id_tag', 'CID'),  # 1
+            ('char_id', -1),  # 2
+            ]
+
+        RT_INBOUND = [
+            ('name', ArgType.STR),  # 0
+            ]
+
+        RT_OUTBOUND = [
+            ('name', ''),  # 0
+            ]
+
 
     class ClientDROLegacy(Enum):
         MS_INBOUND = [
@@ -134,7 +155,7 @@ class Clients():
             ('pos', ArgType.STR),  # 5
             ('sfx', ArgType.STR),  # 6
             ('anim_type', ArgType.INT),  # 7
-            ('cid', ArgType.INT),  # 8
+            ('char_id', ArgType.INT),  # 8
             ('sfx_delay', ArgType.INT),  # 9
             ('button', ArgType.INT),  # 10
             ('evidence', ArgType.INT),  # 11
@@ -152,7 +173,7 @@ class Clients():
             ('pos', 'jud'),  # 5
             ('sfx', 0),  # 6
             ('anim_type', 0),  # 7
-            ('cid', 0),  # 8
+            ('char_id', 0),  # 8
             ('sfx_delay', 0),  # 9
             ('button', 0),  # 10
             ('evidence', 0),  # 11
@@ -164,15 +185,35 @@ class Clients():
 
         MC_INBOUND = [
             ('name', ArgType.STR),  # 0
-            ('cid', ArgType.INT),  # 1
+            ('char_id', ArgType.INT),  # 1
             ]
 
         MC_OUTBOUND = [
             ('name', ''),  # 0
-            ('cid', -1),  # 1
+            ('char_id', -1),  # 1
             ]
 
         BN_OUTBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        CC_INBOUND = [
+            ('client_id', 0),
+            ('char_id', '1'),
+            ('hdid', ''),
+            ]
+
+        PV_OUTBOUND = [
+            ('client_id', 0),  # 0
+            ('char_id_tag', 'CID'),  # 1
+            ('char_id', -1),  # 2
+            ]
+
+        RT_INBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        RT_OUTBOUND = [
             ('name', ''),  # 0
             ]
 
@@ -186,7 +227,7 @@ class Clients():
             ('pos', ArgType.STR),  # 5
             ('sfx', ArgType.STR),  # 6
             ('anim_type', ArgType.INT),  # 7
-            ('cid', ArgType.INT),  # 8
+            ('char_id', ArgType.INT),  # 8
             ('sfx_delay', ArgType.INT),  # 9
             ('button', ArgType.INT),  # 10
             ('evidence', ArgType.INT),  # 11
@@ -208,7 +249,7 @@ class Clients():
             ('pos', 'jud'),  # 5
             ('sfx', 0),  # 6
             ('anim_type', 0),  # 7
-            ('cid', 0),  # 8
+            ('char_id', 0),  # 8
             ('sfx_delay', 0),  # 9
             ('button', 0),  # 10
             ('evidence', 0),  # 11
@@ -227,17 +268,37 @@ class Clients():
 
         MC_INBOUND = [
             ('name', ArgType.STR),  # 0
-            ('cid', ArgType.INT),  # 1
+            ('char_id', ArgType.INT),  # 1
             ('showname', ArgType.STR_OR_EMPTY),  # 2
             ]
 
         MC_OUTBOUND = [
             ('name', ''),  # 0
-            ('cid', -1),  # 1
+            ('char_id', -1),  # 1
             ('showname', ''),  # 2
             ]
 
         BN_OUTBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        CC_INBOUND = [
+            ('client_id', 0),
+            ('char_id', '1'),
+            ('hdid', ''),
+            ]
+
+        PV_OUTBOUND = [
+            ('client_id', 0),  # 0
+            ('char_id_tag', 'CID'),  # 1
+            ('char_id', -1),  # 2
+            ]
+
+        RT_INBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        RT_OUTBOUND = [
             ('name', ''),  # 0
             ]
 
@@ -251,7 +312,7 @@ class Clients():
             ('pos', ArgType.STR),  # 5
             ('sfx', ArgType.STR),  # 6
             ('anim_type', ArgType.INT),  # 7
-            ('cid', ArgType.INT),  # 8
+            ('char_id', ArgType.INT),  # 8
             ('sfx_delay', ArgType.INT),  # 9
             ('button', ArgType.INT),  # 10
             ('evidence', ArgType.INT),  # 11
@@ -278,7 +339,7 @@ class Clients():
             ('pos', 'jud'),  # 5
             ('sfx', 0),  # 6
             ('anim_type', 0),  # 7
-            ('cid', 0),  # 8
+            ('char_id', 0),  # 8
             ('sfx_delay', 0),  # 9
             ('button', 0),  # 10
             ('evidence', 0),  # 11
@@ -302,17 +363,37 @@ class Clients():
 
         MC_INBOUND = [
             ('name', ArgType.STR),  # 0
-            ('cid', ArgType.INT),  # 1
+            ('char_id', ArgType.INT),  # 1
             ('showname', ArgType.STR_OR_EMPTY),  # 2
             ]
 
         MC_OUTBOUND = [
             ('name', ''),  # 0
-            ('cid', -1),  # 1
+            ('char_id', -1),  # 1
             ('showname', ''),  # 2
             ]
 
         BN_OUTBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        CC_INBOUND = [
+            ('client_id', 0),
+            ('char_id', '1'),
+            ('hdid', ''),
+            ]
+
+        PV_OUTBOUND = [
+            ('client_id', 0),  # 0
+            ('char_id_tag', 'CID'),  # 1
+            ('char_id', -1),  # 2
+            ]
+
+        RT_INBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        RT_OUTBOUND = [
             ('name', ''),  # 0
             ]
 
@@ -326,7 +407,7 @@ class Clients():
             ('pos', ArgType.STR),  # 5
             ('sfx', ArgType.STR),  # 6
             ('anim_type', ArgType.INT),  # 7
-            ('cid', ArgType.INT),  # 8
+            ('char_id', ArgType.INT),  # 8
             ('sfx_delay', ArgType.INT),  # 9
             ('button', ArgType.INT),  # 10
             ('evidence', ArgType.INT),  # 11
@@ -355,7 +436,7 @@ class Clients():
             ('pos', 'jud'),  # 5
             ('sfx', 0),  # 6
             ('anim_type', 0),  # 7
-            ('cid', 0),  # 8
+            ('char_id', 0),  # 8
             ('sfx_delay', 0),  # 9
             ('button', 0),  # 10
             ('evidence', 0),  # 11
@@ -381,14 +462,14 @@ class Clients():
 
         MC_INBOUND = [
             ('name', ArgType.STR),  # 0
-            ('cid', ArgType.INT),  # 1
+            ('char_id', ArgType.INT),  # 1
             ('showname', ArgType.STR_OR_EMPTY),  # 2
             ('effects', ArgType.INT),  # 3
             ]
 
         MC_OUTBOUND = [
             ('name', ''),  # 0
-            ('cid', -1),  # 1
+            ('char_id', -1),  # 1
             ('showname', ''),  # 2
             ('loop', -1),  # 3
             ('channel', 0),  # 4
@@ -398,6 +479,26 @@ class Clients():
         BN_OUTBOUND = [
             ('name', ''),  # 0
             ('pos', ''),  # 1
+            ]
+
+        CC_INBOUND = [
+            ('client_id', 0),
+            ('char_id', '1'),
+            ('hdid', ''),
+            ]
+
+        PV_OUTBOUND = [
+            ('client_id', 0),  # 0
+            ('char_id_tag', 'CID'),  # 1
+            ('char_id', -1),  # 2
+            ]
+
+        RT_INBOUND = [
+            ('name', ''),  # 0
+            ]
+
+        RT_OUTBOUND = [
+            ('name', ''),  # 0
             ]
 
     ClientKFO2d8 = Enum('ClientKFO2d8', [(m.name, m.value) for m in ClientAO2d7])

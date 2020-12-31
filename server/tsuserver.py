@@ -50,7 +50,7 @@ class TsuserverDR:
     def __init__(self, protocol=None, client_manager=None, in_test=False):
         self.logged_packet_limit = 100  # Arbitrary
         self.logged_packets = []
-        self.print_packets = False  # For debugging purposes
+        self.print_packets = True  # For debugging purposes
         self._server = None  # Internal server object, changed to proper object later
 
         self.release = 4
