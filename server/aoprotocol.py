@@ -940,9 +940,8 @@ class AOProtocol(asyncio.Protocol):
                                   self.client.get_char_name()))
 
     def net_cmd_re(self, args):
-        # Unsupported
-        raise KeyError('Client using {} {} sent an unsupported RE packet.'
-                       .format(self.client.version[0], self.client.version[1]))
+        # Ignore packet
+        return
 
     def net_cmd_pw(self, args):
         # Ignore packet
@@ -950,7 +949,7 @@ class AOProtocol(asyncio.Protocol):
         # However, so that it stops raising errors for clients, an empty method is implemented
         # Well, not empty, there are these comments which makes it not empty
         # but not code is run.
-        pass
+        return
 
     def net_cmd_sp(self, args):
         """
@@ -962,10 +961,12 @@ class AOProtocol(asyncio.Protocol):
         self.client.change_position(args[0])
 
     def net_cmd_opKICK(self, args):
-        self.net_cmd_ct(['opkick', '/kick {}'.format(args[0])])
+        # Ignore packet
+        return
 
     def net_cmd_opBAN(self, args):
-        self.net_cmd_ct(['opban', '/ban {}'.format(args[0])])
+        # Ignore packet
+        return
 
     net_cmd_dispatcher = {
         'HI': net_cmd_hi,  # handshake

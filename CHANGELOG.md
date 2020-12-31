@@ -579,5 +579,5 @@
 * Fixed the server attempting to send packets to clients without checking if the client is still online.
 * Fixed /poison, /cure and notifications for effects kicking in not showing the target's ID to the command runner and zone watchers
 * Fixed /charselect notifying of the wrong person running the command to officers
-* Removed deprecated AO commands
+* Removed deprecated AO commands, and deprecated packets opKICK and opBAN
 * Dropped Python 3.6 support
