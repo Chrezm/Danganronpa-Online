@@ -199,9 +199,12 @@ class ClientManager:
             for (field, default_value) in outbound_args:
                 try:
                     value = dargs[field]
-                except KeyError:  # If the key was popped/is missing, use defaults then
+                except KeyError:
                     value = default_value
-                to_send.append(value)
+                if field.endswith('ao2_list'):
+                    to_send.extend(value)
+                else:
+                    to_send.append(value)
                 final_dargs[field] = value
 
             return final_dargs, to_send
@@ -226,7 +229,10 @@ class ClientManager:
                                         pred=pred)
 
             if cond(self):
-                self.send_command('CT', username, msg)
+                self.send_command_dict('CT', {
+                    'username': username,
+                    'message': msg,
+                    })
 
         def send_ooc_others(self, msg, username=None, allow_empty=False,
                             is_staff=None, is_officer=None, in_area=None, not_to=None, part_of=None,
@@ -478,7 +484,7 @@ class ClientManager:
                 self.last_received_ic[2] = final_pargs
             self.last_received_ic[1] = final_pargs
 
-            self.send_command('MS', *to_send)
+            self.send_command_dict('MS', final_pargs)
 
         def send_ic_others(self, params=None, sender=None, bypass_replace=False,
                            bypass_deafened_starters=False, pred=None, not_to=None,
@@ -529,13 +535,81 @@ class ClientManager:
             if pos is None:
                 pos = self.pos
 
-            pargs = {
+            self.send_command_dict('BN', {
                 'name': name,
-                'pos': pos
-                }
+                'pos': pos,
+                })
 
-            _, to_send = self.prepare_command('BN', pargs)
-            self.send_command('BN', *to_send)
+        def send_evidence_list(self):
+            self.send_command_dict('LE', {
+                'evidence_ao2_list': self.area.get_evidence_list(self)
+                })
+
+        def send_health(self, side=None, health=None):
+            self.send_command_dict('HP', {
+                'side': side,
+                'health': health
+                })
+
+        def send_music(self, name=None, char_id=None, showname=None, loop=None, channel=None,
+                       effects=None):
+            self.send_command_dict('MC', {
+                'name': name,
+                'char_id': char_id,
+                'showname': showname,
+                'loop': loop,
+                'channel': channel,
+                'effects': effects,
+                })
+
+        def send_splash(self, name=None):
+            self.send_command_dict('RT', {
+                'name': name,
+                })
+
+        def send_clock(self, client_id=None, hour=None):
+            self.send_command_dict('CL', {
+                'client_id': client_id,
+                'hour': hour,
+                })
+
+        def send_gamemode(self, name=None):
+            self.send_command_dict('GM', {
+                'name': name,
+                })
+
+        def send_time_of_day(self, name=None):
+            self.send_command_dict('TOD', {
+                'name': name,
+                })
+
+        def send_timer_resume(self, timer_id=None):
+            self.send_command_dict('TR', {
+                'timer_id': timer_id,
+                })
+
+        def send_timer_pause(self, timer_id=None):
+            self.send_command_dict('TP', {
+                'timer_id': timer_id,
+                })
+
+        def send_timer_set_time(self, timer_id=None, new_time=None):
+            self.send_command_dict('TST', {
+                'timer_id': timer_id,
+                'new_time': new_time,
+                })
+
+        def send_timer_set_step_length(self, timer_id=None, new_step_length=None):
+            self.send_command_dict('TSS', {
+                'timer_id': timer_id,
+                'new_step_length': new_step_length,
+                })
+
+        def send_timer_set_firing_interval(self, timer_id=None, new_firing_interval=None):
+            self.send_command_dict('TSF', {
+                'timer_id': timer_id,
+                'new_firing_interval': new_firing_interval,
+                })
 
         def disconnect(self):
             self.transport.close()
@@ -674,17 +748,23 @@ class ClientManager:
                 # KEEP THE ASTERISK, unless you want a very weird single area comprised
                 # of all areas back to back forming a black hole area of doom and despair
                 # that crashes all clients that dare attempt join this area.
-                self.send_command('FM', *reloaded_music_list)
+                self.send_command_dict('FM', {
+                    'music_ao2_list': reloaded_music_list,
+                    })
             else:
                 # KFO and AO2.8.4 deals with music lists differently than other clients
                 # They want the area lists and music lists separate, so they will have it like that
                 area_list = self.server.build_music_list(from_area=self.area, c=self,
                                                          include_areas=True,
                                                          include_music=False)
-                self.send_command('FA', *area_list)
+                self.send_command_dict('FA', {
+                    'areas_ao2_list': area_list,
+                    })
                 music_list = self.server.prepare_music_list(c=self,
                                                             specific_music_list=raw_music_list)
-                self.send_command('FM', *music_list)
+                self.send_command_dict('FM', {
+                    'music_ao2_list': music_list,
+                    })
 
             # Update the new music list of the client once everything is done, if a new music list
             # was indeed loaded. Doing this only now prevents setting the music list to something
@@ -1199,22 +1279,37 @@ class ClientManager:
             # If not spectator
             if self.char_id is not None and self.char_id >= 0:
                 char_list[self.char_id] = 0  # Self is always available
-            self.send_command('CharsCheck', *char_list)
+            self.send_command_dict('CharsCheck', {
+                'chars_status_ao2_list': char_list,
+                })
 
         def send_done(self):
             self.refresh_char_list()
-            self.send_command('HP', 1, self.area.hp_def)
-            self.send_command('HP', 2, self.area.hp_pro)
+            self.send_command_dict('HP', {
+                'side': 1,
+                'health': self.area.hp_def
+                })
+            self.send_command_dict('HP', {
+                'side': 2,
+                'health': self.area.hp_pro
+                })
             if self.is_blind:
                 self.send_background(name=self.server.config['blackout_background'])
             else:
                 self.send_background(name=self.area.background)
-            self.send_command('LE', *self.area.get_evidence_list(self))
-            self.send_command('MM', 1)
-            self.send_command('OPPASS', fantacrypt.fanta_encrypt(self.server.config['guardpass']))
+            self.send_command_dict('LE', {
+                'evidence_ao2_list': self.area.get_evidence_list(self),
+                })
+            self.send_command_dict('MM', {
+                'unknown': 1,
+                })
+            self.send_command_dict('OPPASS', {
+                'guard_pass': fantacrypt.fanta_encrypt(self.server.config['guardpass']),
+                })
+
             if self.char_id is None:
                 self.char_id = -1  # Set to a valid ID if still needed
-            self.send_command('DONE')
+            self.send_command_dict('DONE', dict())
 
             if self.bad_version:
                 self.send_ooc(f'Unknown client detected {self.version}. '
@@ -1480,7 +1575,9 @@ class ClientManager:
                 raise ClientError('Invalid position. '
                                   'Possible values: def, pro, hld, hlp, jud, wit.')
             self.pos = pos
-            self.send_command('SP', self.pos)  # Send a "Set Position" packet
+            self.send_command_dict('SP', {
+                'position': self.pos
+                })  # Send a "Set Position" packet
 
         def set_mod_call_delay(self):
             self.mod_call_time = round(time.time() * 1000.0 + 30000)
@@ -1598,8 +1695,10 @@ class ClientManager:
 
         # Check if server is full, and if so, send number of players and disconnect
         if cur_id == -1:
-            c.send_command('PN', self.server.get_player_count(),
-                           self.server.config['playerlimit'])
+            c.send_command_dict('PN', {
+                'player_count': self.server.get_player_count(),
+                'player_limit': self.server.config['playerlimit']
+                })
             c.disconnect()
             return c
         self.cur_id[cur_id] = True

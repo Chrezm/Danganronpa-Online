@@ -57,6 +57,10 @@ class ClientError(TsuserverException):
     class UnauthorizedError(TsuserverException):
         pass
 
+class AOProtocolError(TsuserverException):
+    class InvalidInboundPacketArguments(TsuserverException):
+        pass
+
 class AreaError(TsuserverException):
     pass
 

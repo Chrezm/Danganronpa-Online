@@ -56,8 +56,8 @@ def ooc_cmd_announce(client: ClientManager.Client, arg: str):
     except ArgumentError:
         raise ArgumentError('You cannot send an empty announcement.')
 
-    client.server.send_all_cmd_pred('CT', '{}'.format(client.server.config['hostname']),
-                                    '=== Announcement ===\r\n{}\r\n=================='.format(arg))
+    for c in client.server.client_manager.clients:
+        c.send_ooc('=== Announcement ===\r\n{}\r\n=================='.format(arg))
     logger.log_server('[{}][{}][ANNOUNCEMENT]{}.'
                       .format(client.area.id, client.get_char_name(), arg), client)
 
@@ -2800,8 +2800,8 @@ def ooc_cmd_lm(client: ClientManager.Client, arg: str):
     except ArgumentError:
         raise ArgumentError('You cannot send an empty message.')
 
-    client.area.send_command('CT', '{}[MOD][{}]'
-                             .format(client.server.config['hostname'], client.displayname), arg)
+    for c in client.area.clients:
+        c.send_ooc(arg, '{}[MOD][{}]'.format(client.server.config['hostname'], client.displayname))
     logger.log_server('[{}][{}][LOCAL-MOD]{}.'
                       .format(client.area.id, client.get_char_name(), arg), client)
 
@@ -5184,7 +5184,8 @@ def ooc_cmd_st(client: ClientManager.Client, arg: str):
     Constants.assert_command(client, arg, is_staff=True)
 
     pre = '{} [Staff] {}'.format(client.server.config['hostname'], client.name)
-    client.server.send_all_cmd_pred('CT', pre, arg, pred=lambda c: c.is_staff())
+    for c in client.server.client_manager.clients:
+        c.send_ooc(arg, username=pre, pred=lambda c: c.is_staff())
     logger.log_server('[{}][STAFFCHAT][{}][{}]{}.'
                       .format(client.area.id, client.get_char_name(), client.name, arg), client)
 

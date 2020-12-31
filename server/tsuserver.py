@@ -839,7 +839,9 @@ class TsuserverDR:
         ooc_name = '{}[{}][{}]'.format(mtype, client.area.id, username)
         if as_mod:
             ooc_name += '[M]'
-        self.send_all_cmd_pred('CT', ooc_name, msg, pred=condition)
+        targets = [c for c in self.client_manager.clients if condition(c)]
+        for c in targets:
+            c.send_ooc(msg, username=ooc_name)
         if self.config['use_district']:
             msg = 'GLOBAL#{}#{}#{}#{}'.format(int(as_mod), client.area.id, username, msg)
             self.district_client.send_raw_message(msg)
@@ -848,10 +850,13 @@ class TsuserverDR:
         char_name = client.displayname
         area_name = client.area.name
         area_id = client.area.id
-        self.send_all_cmd_pred('CT', '{}'.format(self.config['hostname']),
-                               '=== Advert ===\r\n{} in {} [{}] needs {}\r\n==============='
-                               .format(char_name, area_name, area_id, msg),
-                               pred=lambda x: not x.muted_adverts)
+
+        targets = [c for c in self.client_manager.clients if not c.muted_adverts]
+        msg = ('=== Advert ===\r\n{} in {} [{}] needs {}\r\n==============='
+               .format(char_name, area_name, area_id, msg))
+        for c in targets:
+            c.send_ooc(msg)
+
         if self.config['use_district']:
             msg = 'NEED#{}#{}#{}#{}'.format(char_name, area_name, area_id, msg)
             self.district_client.send_raw_message(msg)

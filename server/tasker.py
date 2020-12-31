@@ -267,7 +267,7 @@ class Tasker:
                    ((c.is_staff() or send_first_hour) and area_1 <= c.area.id <= area_2)]
         for c in targets:
             c.send_ooc('It is now {}:00.'.format('{0:02d}'.format(hour)))
-            c.send_command('CL', client.id, hour)
+            c.send_clock(client_id=client.id, hour=hour)
 
         while True:
             try:
@@ -322,16 +322,15 @@ class Tasker:
                 for (period_start, period_name) in periods:
                     if period_start == hour or force_period_refresh:
                         force_period_refresh = False
-                        func = lambda c: c == client or (area_1 <= c.area.id <= area_2)
-                        self.server.send_all_cmd_pred('TOD', period_name, pred=func)
                         for c in targets:
+                            c.send_time_of_day(name=period_name)
                             c.send_ooc(f'It is now {period_name}.')
                         break
 
                 # Regardless of new period, send other packets
                 for c in targets:
                     c.send_ooc('It is now {}:00.'.format('{0:02d}'.format(hour)))
-                    c.send_command('CL', client.id, hour)
+                    c.send_clock(client_id=client.id, hour=hour)
 
                 time_started_at = time.time()
                 minute_at_interruption = 0
@@ -353,8 +352,8 @@ class Tasker:
                     # refresh_reason may be undefined or the empty string.
                     # Both cases imply cancelation
                     for c in targets:
-                        c.send_command('CL', client.id, -1)
-                        c.send_command('TOD', '')  # Reset time of day
+                        c.send_clock(client_id=client.id, hour=-1)
+                        c.send_time_of_day(name='')  # Reset time of day
                     client.send_ooc('Your day cycle in areas {} through {} has been canceled.'
                                     .format(area_1, area_2))
                     client.send_ooc_others('(X) The day cycle initiated by {} in areas {} through '
@@ -409,8 +408,8 @@ class Tasker:
                     targets = [c for c in self.server.client_manager.clients if c == client or
                                (area_1 <= c.area.id <= area_2)]
                     for c in targets:
-                        c.send_command('CL', client.id, -1)
-                        c.send_command('TOD', 'unknown')
+                        c.send_clock(client_id=client.id, hour=-1)
+                        c.send_time_of_day(name='unknown')
 
                 elif refresh_reason == 'period':
                     # Only update minute and time started at if timer is not paused
@@ -462,8 +461,10 @@ class Tasker:
                                     break
 
                         if changed_current_period:
-                            func = lambda c: c == client or (area_1 <= c.area.id <= area_2)
-                            self.server.send_all_cmd_pred('TOD',  new_period_name, pred=func)
+                            targets = [c for c in self.server.client_manager.clients
+                                       if c == client or area_1 <= c.area.id <= area_2]
+                            for c in targets:
+                                c.send_time_of_day(name=new_period_name)
 
                     # Send notifications appropriately
                     if start >= 0:
@@ -561,23 +562,21 @@ class Tasker:
             client.is_movement_handicapped = False
 
     async def as_timer(self, client, args):
-        _, length, name, is_public = args # Length in seconds, already converted
-        client_name = client.name # Failsafe in case disconnection before task is cancelled/expires
+        _, length, name, is_public = args  # Length in seconds, already converted
+        client_name = client.name  # Failsafe in case disconnection before task is cancelled/expires
 
         try:
             await asyncio.sleep(length)
         except asyncio.CancelledError:
-            self.server.send_all_cmd_pred('CT', '{}'.format(self.server.config['hostname']),
-                                          'Timer "{}" initiated by {} has been canceled.'
-                                          .format(name, client_name),
-                                          pred=lambda c: (c == client or c.is_staff() or
-                                                          (is_public and c.area == client.area)))
+            client.send_ooc(f'Your timer {client_name} has been canceled.')
+            client.send_ooc_others(f'Timer "{name}" initiated by {client_name} has been canceled.',
+                                   pred=lambda c: (c.is_staff() or
+                                                   (is_public and c.area == client.area)))
         else:
-            self.server.send_all_cmd_pred('CT', '{}'.format(self.server.config['hostname']),
-                                          'Timer "{}" initiated by {} has expired.'
-                                          .format(name, client_name),
-                                          pred=lambda c: (c == client or c.is_staff() or
-                                                          (is_public and c.area == client.area)))
+            client.send_ooc(f'Your timer {client_name} has expired.')
+            client.send_ooc_others(f'Timer "{name}" initiated by {client_name} has expired.',
+                                   pred=lambda c: (c.is_staff() or
+                                                   (is_public and c.area == client.area)))
         finally:
             del self.active_timers[name]
 

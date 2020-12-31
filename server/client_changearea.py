@@ -163,7 +163,7 @@ class ClientChangeArea:
             # If the new area is not part of a zone, send order to go back to original gamemode
             # If the area is part of a zone, that is covered in the next if
             if not area.in_zone:
-                client.send_command('GM', '')
+                client.send_gamemode(name='')
 
             zone_id = old_area.in_zone.get_id()
 
@@ -176,8 +176,7 @@ class ClientChangeArea:
 
         # Check if entering a zone
         if area.in_zone and area.in_zone != old_area.in_zone:
-            client.send_command('GM', area.in_zone.get_mode())
-
+            client.send_gamemode(name=area.in_zone.get_mode())
             zone_id = area.in_zone.get_id()
 
             if client.is_staff() and client.zone_watched != area.in_zone:
@@ -771,13 +770,13 @@ class ClientChangeArea:
         client.new_area = area  # Update again, as the above if may not have run
         area.new_client(client)
 
-        client.send_command('HP', 1, client.area.hp_def)
-        client.send_command('HP', 2, client.area.hp_pro)
+        client.send_health(side=1, health=client.area.hp_def)
+        client.send_health(side=2, health=client.area.hp_pro)
         if client.is_blind:
             client.send_background(name=client.server.config['blackout_background'])
         else:
             client.send_background(name=client.area.background)
-        client.send_command('LE', *client.area.get_evidence_list(client))
+        client.send_evidence_list()
         client.send_ic_blankpost()
 
         if client.followedby and not ignore_followers and not override_all:

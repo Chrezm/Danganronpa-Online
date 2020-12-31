@@ -332,7 +332,7 @@ class _TestClientManager(ClientManager):
                 self.ooc('/area {}'.format(area_id))
             else:
                 name = area.name
-                buffer = 'MC#{}-{}#0#%'.format(area_id, name)
+                buffer = 'MC#{}-{}#{}#%'.format(area_id, name, self.char_id)
                 self.send_command_cts(buffer)
 
             assert self.area.id == area_id, (self.area.id, area_id, as_command)

@@ -23,10 +23,105 @@ from server.constants import ArgType
 
 
 class DefaultAO2Protocol(Enum):
+    DECRYPTOR_OUTBOUND = [
+        ('key', 34),  # 0
+        ]
+
+    HI_INBOUND = [
+        ('client_hdid', ArgType.STR),  # 0
+        ]
+
+    BD_OUTBOUND = [
+        ]
+
+    ID_OUTBOUND = [
+        ('client_id', 0),  # 0
+        ('server_software', 'TsuserverDR'),  # 1
+        ('server_software_version', '0.0.0'),  # 2
+        ]
+
+    PN_OUTBOUND = [
+        ('player_count', 0),  # 0
+        ('player_limit', 0),  # 1
+        ]
+
+    ID_INBOUND = [
+        ('client_software', ArgType.STR),  # 0
+        ('client_software_version', ArgType.STR),  # 1
+        ]
+
+    FL_OUTBOUND = [
+        ('fl_ao2_list', list()),  # 0
+        ]
+
+    CH_INBOUND = [
+        ('char_id', ArgType.INT),  # 0
+        ]
+
+    CHECK_OUTBOUND = [
+        ]
+
+    ASKCHAA_INBOUND = [
+        ]
+
+    SI_OUTBOUND = [
+        ('char_count', 0),  # 0
+        ('evidence_count', 0),  # 1
+        ('music_list_count', 0),  # 2
+        ]
+
+    AE_INBOUND = [
+        ('evidence_page', ArgType.INT),  # 0
+        ]
+
+    RC_INBOUND = [
+        ]
+
+    SC_OUTBOUND = [
+        ('chars_ao2_list', list()),  # 0
+        ]
+
+    RM_INBOUND = [
+        ]
+
+    SM_OUTBOUND = [
+        ('music_ao2_list', list()),  # 0
+        ]
+
+    RD_INBOUND = [
+        ]
+
+    CHARSCHECK_OUTBOUND = [
+        ('chars_status_ao2_list', list()),  # 0
+        ]
+
+    BN_OUTBOUND = [
+        ('name', ''),  # 0
+        ]
+
+    LE_OUTBOUND = [
+        ('evidence_ao2_list', list()),  # 0
+        ]
+
+    MM_OUTBOUND = [
+        ('unknown', 1),  # 0
+        ]
+
+    OPPASS_OUTBOUND = [
+        ('guard_pass', ''),  # 0
+        ]
+
+    DONE_OUTBOUND = [
+        ]
+
+    FM_OUTBOUND = [
+        ('music_ao2_list', list()),  # 0
+        ]
+
     CC_INBOUND = [
         ('client_id', ArgType.INT),
         ('char_id', ArgType.INT),
-        ('hdid', ArgType.STR),
+        ('client_hdid', ArgType.STR),
         ]
 
     PV_OUTBOUND = [
@@ -35,24 +130,16 @@ class DefaultAO2Protocol(Enum):
         ('char_id', -1),  # 2
         ]
 
-    RT_INBOUND = [
-        ('name', ArgType.STR),  # 0
+    CT_INBOUND = [
+        ('username', ArgType.STR),  # 0
+        ('message', ArgType.STR),  # 1
         ]
 
-    RT_OUTBOUND = [
-        ('name', ''),  # 0
+    CT_OUTBOUND = [
+        ('username', ''),  # 0
+        ('message', ''),  # 1
         ]
 
-    GM_OUTBOUND = [
-        ('name', ''),  # 0
-        ]
-
-    TOD_OUTBOUND = [
-        ('name', ''),  # 0
-        ]
-
-
-class ClientDRO1d0d0(Enum):
     MS_INBOUND = [
         ('msg_type', ArgType.STR),  # 0
         ('pre', ArgType.STR_OR_EMPTY),  # 1
@@ -101,9 +188,90 @@ class ClientDRO1d0d0(Enum):
         ('showname', ''),  # 2
         ]
 
-    BN_OUTBOUND = [
+    RT_INBOUND = [
+        ('name', ArgType.STR),  # 0
+        ]
+
+    RT_OUTBOUND = [
         ('name', ''),  # 0
         ]
+
+    HP_INBOUND = [
+        ('side', ArgType.INT),  # 0
+        ('health', ArgType.INT),  # 1
+        ]
+
+    HP_OUTBOUND = [
+        ('side', 1),  # 0
+        ('health', 0),  # 1
+        ]
+
+    PE_INBOUND = [
+        ('name', ArgType.STR),  # 0
+        ('description', ArgType.STR),  # 1
+        ('image', ArgType.STR),  # 2
+        ]
+
+    DE_INBOUND = [
+        ('evi_id', ArgType.INT),  # 0
+        ]
+
+    EE_INBOUND = [
+        ('evi_id', ArgType.INT),  # 0
+        ('name', ArgType.STR),  # 1
+        ('description', ArgType.STR),  # 2
+        ('image', ArgType.STR),  # 3
+        ]
+
+    ZZ_INBOUND = [
+        ]
+
+    ZZ_OUTBOUND = [
+        ('message', ''),  # 0
+        ]
+
+    SP_OUTBOUND = [
+        ('position', ''),  # 0
+        ]
+
+    CL_OUTBOUND = [
+        ('client_id', 0),  # 0
+        ('hour', 0),  # 0
+        ]
+
+    TR_OUTBOUND = [
+        ('timer_id', 0),  # 0
+        ]
+
+    TP_OUTBOUND = [
+        ('timer_id', 0),  # 0
+        ]
+
+    TST_OUTBOUND = [
+        ('timer_id', 0),  # 0
+        ('new_time', 0),  # 1
+        ]
+
+    TSS_OUTBOUND = {
+        ('timer_id', 0),  # 0
+        ('new_step_length', 0),  # 1
+        }
+
+    TSF_OUTBOUND = {
+        ('timer_id', 0),  # 0
+        ('new_firing_interval', 0),  # 1
+        }
+
+    GM_OUTBOUND = [
+        ('name', ''),  # 0
+        ]
+
+    TOD_OUTBOUND = [
+        ('name', ''),  # 0
+        ]
+
+
+ClientDRO1d0d0 = Enum('ClientDRO1d0d0', [(m.name, m.value) for m in DefaultAO2Protocol])
 
 
 class ClientDROLegacy(Enum):
@@ -269,7 +437,7 @@ class ClientAO2d7(Enum):
         ('flip', 0),  # 12
         ('ding', -1),  # 13
         ('color', 0),  # 14
-        ('showname', ' '),  # 15
+        ('showname', ''),  # 15
         ('charid_pair', -1),  # 16
         ('other_folder', ''),  # 17
         ('other_emote', ''),  # 18
@@ -298,6 +466,10 @@ class ClientAO2d7(Enum):
 
     BN_OUTBOUND = [
         ('name', ''),  # 0
+        ]
+
+    FA_OUTBOUND = [
+        ('areas_ao2_list', list()),  # 0
         ]
 
 
@@ -347,7 +519,7 @@ class ClientAO2d8d4(Enum):
         ('flip', 0),  # 12
         ('ding', -1),  # 13
         ('color', 0),  # 14
-        ('showname', ' '),  # 15
+        ('showname', ''),  # 15
         ('charid_pair_pair_order', -1),  # 16
         ('other_folder', ''),  # 17
         ('other_emote', ''),  # 18
@@ -383,6 +555,10 @@ class ClientAO2d8d4(Enum):
     BN_OUTBOUND = [
         ('name', ''),  # 0
         ('pos', ''),  # 1
+        ]
+
+    FA_OUTBOUND = [
+        ('areas_ao2_list', list()),  # 0
         ]
 
 

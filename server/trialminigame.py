@@ -274,7 +274,7 @@ class TrialMinigame(GameWithAreas):
         # Force every user in the former areas of the minigame to switch to trial gamemode
         for area in areas:
             for user in area.clients:
-                user.send_command('GM', 'trial')
+                user.send_gamemode(name='trial')
 
     def _on_area_client_left(self, area, client=None, new_area=None, old_displayname=None,
                              ignore_bleeding=False):
