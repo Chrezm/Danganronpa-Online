@@ -102,7 +102,13 @@ class AOProtocol(asyncio.Protocol):
                     print(f'> {self.client.id}: {msg}')
                 self.server.log_packet(self.client, msg, True)
                 cmd, *args = msg.split('#')
-                self.net_cmd_dispatcher[cmd](self, args)
+                try:
+                    dispatched = self.net_cmd_dispatcher[cmd]
+                except KeyError:
+                    logger.log_pserver(f'Client {self.client.id} sent abnormal packet {msg} '
+                                       f'(client version: {self.client.version}).')
+                else:
+                    dispatched(self, args)
             except AOProtocolError.InvalidInboundPacketArguments:
                 pass
             except Exception as ex:
@@ -120,6 +126,7 @@ class AOProtocol(asyncio.Protocol):
 
         :param transport: the transport object
         """
+
         self.client = self.server.new_client(transport, my_protocol=my_protocol)
         self.ping_timeout = asyncio.get_event_loop().call_later(self.server.config['timeout'], self.client.disconnect)
         self.client.send_command_dict('decryptor', {
