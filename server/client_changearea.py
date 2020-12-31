@@ -20,7 +20,8 @@ import time
 
 from server import logger
 from server.exceptions import ClientError, AreaError
-from server.constants import Constants, Clients
+from server.constants import Constants
+
 
 class ClientChangeArea:
     def __init__(self, client):
@@ -698,14 +699,15 @@ class ClientChangeArea:
 
             # It also returns the character name that the player ended up, if it changed.
             if not ignore_checks:
-                new_cid, mes = client.check_change_area(area, override_passages=override_passages,
-                                                        override_effects=override_effects,
-                                                        more_unavail_chars=more_unavail_chars)
+                new_char_id, mes = client.check_change_area(area,
+                                                            override_passages=override_passages,
+                                                            override_effects=override_effects,
+                                                            more_unavail_chars=more_unavail_chars)
             else:
                 if change_to:
-                    new_cid, mes = change_to, list()
+                    new_char_id, mes = change_to, list()
                 else:
-                    new_cid, mes = client.char_id, list()
+                    new_char_id, mes = client.char_id, list()
 
             # Code after this line assumes that the area change will be successful
             # (but has not yet been performed)
@@ -719,8 +721,8 @@ class ClientChangeArea:
             # or the char is restricted there.
             old_char = client.get_char_name()
             old_dname = client.displayname
-            if new_cid != client.char_id:
-                client.change_character(new_cid, target_area=area, announce_zwatch=False)
+            if new_char_id != client.char_id:
+                client.change_character(new_char_id, target_area=area, announce_zwatch=False)
                 new_char = client.get_char_name()
                 if old_char in area.restricted_chars:
                     client.send_ooc('Your character was restricted in your new area, switched '

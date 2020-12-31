@@ -4585,17 +4585,17 @@ def ooc_cmd_scream(client: ClientManager.Client, arg: str):
                                    is_zstaff_flex=True, in_area=True,
                                    pred=lambda c: not c.muted_global)
 
-        client.send_ic(msg=arg, pos=client.pos, cid=client.char_id, showname=client.showname)
+        client.send_ic(msg=arg, pos=client.pos, char_id=client.char_id, showname=client.showname)
 
         if not client.area.private_area:
             client.send_ic_others(msg=arg, to_deaf=False, showname=client.showname,
-                                  cid=client.char_id,
+                                  char_id=client.char_id,
                                   bypass_deafened_starters=True,  # send_ic handles nerfing for deaf
                                   pred=lambda c: (not c.muted_global and
                                                   (c.area == client.area or
                                                    ((client.is_staff() or not c.area.ic_lock) and
                                                     c.area.name in client.area.scream_range))))
-            client.send_ic_others(msg=arg, to_deaf=True, cid=client.char_id,
+            client.send_ic_others(msg=arg, to_deaf=True, char_id=client.char_id,
                                   bypass_deafened_starters=True,  # send_ic handles nerfing for deaf
                                   pred=lambda c: (not c.muted_global and
                                                   (c.area == client.area or
@@ -4603,7 +4603,7 @@ def ooc_cmd_scream(client: ClientManager.Client, arg: str):
                                                     c.area.name in client.area.scream_range))))
         else:
             client.send_ic_others(msg=arg, to_deaf=False, showname=client.showname,
-                                  cid=client.char_id, in_area=client.area,
+                                  char_id=client.char_id, in_area=client.area,
                                   bypass_deafened_starters=True,  # send_ic handles nerfing for deaf
                                   pred=lambda c: not c.muted_global)
 
@@ -5210,8 +5210,8 @@ def ooc_cmd_switch(client: ClientManager.Client, arg: str):
         raise ArgumentError('You must specify a character name.')
 
     # Obtain char_id if character exists and then try and change to given char if available
-    cid = client.server.get_char_id_by_name(arg)
-    client.change_character(cid, force=client.is_mod)
+    char_id = client.server.get_char_id_by_name(arg)
+    client.change_character(char_id, force=client.is_mod)
     client.send_ooc('Character changed.')
 
 
@@ -6234,21 +6234,21 @@ def ooc_cmd_whisper(client: ClientManager.Client, arg: str):
     if client == target:
         # Player whispered to themselves. Why? Dunno, ask them, not me
         client.send_ooc('You whispered `{}` to yourself.'.format(final_message))
-        client.send_ic(msg=msg, pos=client.pos, cid=client.char_id, showname=client.showname,
+        client.send_ic(msg=msg, pos=client.pos, char_id=client.char_id, showname=client.showname,
                        bypass_deafened_starters=True)
     elif not client.is_visible ^ target.is_visible:
         # Either both client and target are visible
         # Or they are both not, where cm.get_target_public already handles removing sneaked targets
         # if they are not part of the same party as the client (or the client is not staff)
         client.send_ooc('You whispered `{}` to {}.'.format(final_message, final_target))
-        client.send_ic(msg=msg, pos=client.pos, cid=client.char_id, showname=client.showname,
+        client.send_ic(msg=msg, pos=client.pos, char_id=client.char_id, showname=client.showname,
                        bypass_replace=False, bypass_deafened_starters=True)
         client.check_lurk()
 
         target.send_ooc('{} whispered something to you.'.format(final_sender), to_deaf=False)
         target.send_ooc('{} seemed to whisper something to you, but you could not make it out.'
                         .format(final_rec_sender), to_deaf=True)
-        target.send_ic(msg=msg, pos=client.pos, cid=client.char_id, showname=client.showname,
+        target.send_ic(msg=msg, pos=client.pos, char_id=client.char_id, showname=client.showname,
                        bypass_deafened_starters=True)  # send_ic handles nerfing for deafened
 
         if not client.is_visible and public_area:
@@ -7041,7 +7041,7 @@ def ooc_cmd_party_whisper(client: ClientManager.Client, arg: str):
     public_area = not client.area.private_area
 
     client.send_ooc('You whispered `{}` to your party members.'.format(msg))
-    client.send_ic(msg=msg, pos=client.pos, cid=client.char_id, showname=client.showname,
+    client.send_ic(msg=msg, pos=client.pos, char_id=client.char_id, showname=client.showname,
                    bypass_deafened_starters=True)  # send_ic handles nerfing for deafened
 
     members = party.get_members()-{client}
@@ -7056,7 +7056,7 @@ def ooc_cmd_party_whisper(client: ClientManager.Client, arg: str):
                             'not make it out.',
                             to_deaf=True, to_blind=True)
 
-            target.send_ic(msg=msg, pos=client.pos, cid=client.char_id,
+            target.send_ic(msg=msg, pos=client.pos, char_id=client.char_id,
                            showname=(client.showname if not (target.is_deaf and target.is_blind)
                                      else '???'),
                            bypass_deafened_starters=True)  # send_ic handles nerfing for deafened
@@ -7086,7 +7086,7 @@ def ooc_cmd_party_whisper(client: ClientManager.Client, arg: str):
             target.send_ooc('Someone seemed to whisper something to your party, but you could '
                             'not make it out.',
                             to_deaf=True, to_blind=True)
-            target.send_ic(msg=msg, pos=client.pos, cid=client.char_id,
+            target.send_ic(msg=msg, pos=client.pos, char_id=client.char_id,
                            showname=(client.showname if not (target.is_deaf and target.is_blind)
                                      else '???'),
                            bypass_deafened_starters=True)  # send_ic handles nerfing for deafened

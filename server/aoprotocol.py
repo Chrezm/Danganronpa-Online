@@ -21,11 +21,12 @@ import re
 
 from time import localtime, strftime
 
-from server import logger
-from server.constants import ArgType, Clients, Constants
+from server import logger, clients
+from server.constants import ArgType, Constants
 from server.exceptions import AreaError, ClientError, ServerError, PartyError, TsuserverException
 from server.fantacrypt import fanta_decrypt
 from server.evidence import EvidenceList
+
 
 class AOProtocol(asyncio.Protocol):
     """
@@ -170,8 +171,12 @@ class AOProtocol(asyncio.Protocol):
             fallback_protocols = list()
 
         packet_type = '{}_INBOUND'.format(identifier.upper())
-        for protocol in [self.client.packet_handler]+fallback_protocols:
-            expected_pairs = protocol[packet_type].value
+        protocols = [self.client.packet_handler]+fallback_protocols+[clients.DefaultAO2Protocol]
+        for protocol in protocols:
+            try:
+                expected_pairs = protocol[packet_type].value
+            except KeyError:
+                continue
             expected_argument_names = [x[0] for x in expected_pairs]
             expected_types = [x[1] for x in expected_pairs]
             if not self.validate_net_cmd(args, *expected_types, needs_auth=needs_auth):
@@ -255,26 +260,26 @@ class AOProtocol(asyncio.Protocol):
                     return False
 
             if software == 'DRO':
-                self.client.packet_handler = Clients.ClientDRO1d0d0
+                self.client.packet_handler = clients.ClientDRO1d0d0
             else:  # AO2 protocol
                 if release == 2:
                     if major >= 8 and major >= 4:
-                        self.client.packet_handler = Clients.ClientAO2d8d4
+                        self.client.packet_handler = clients.ClientAO2d8d4
                     elif major >= 8:  # KFO
-                        self.client.packet_handler = Clients.ClientKFO2d8
+                        self.client.packet_handler = clients.ClientKFO2d8
                     elif major == 7:  # AO 2.7
-                        self.client.packet_handler = Clients.ClientAO2d7
+                        self.client.packet_handler = clients.ClientAO2d7
                     elif major == 6:  # AO 2.6
-                        self.client.packet_handler = Clients.ClientAO2d6
+                        self.client.packet_handler = clients.ClientAO2d6
                     elif major == 4 and minor == 8:  # Older DRO
-                        self.client.packet_handler = Clients.ClientDROLegacy
+                        self.client.packet_handler = clients.ClientDROLegacy
                     else:
                         return False  # Unrecognized
                 elif release == 'CC':
                     if major >= 24:
-                        self.client.packet_handler = Clients.ClientCC24
+                        self.client.packet_handler = clients.ClientCC24
                     elif major >= 22:
-                        self.client.packet_handler = Clients.ClientCC22
+                        self.client.packet_handler = clients.ClientCC22
                     else:
                         return False  # Unrecognized
             # The only way to make it here is if we have not returned False
@@ -284,7 +289,7 @@ class AOProtocol(asyncio.Protocol):
         if not check_client_version():
             # Warn player they are using an unknown client.
             # Assume a DRO client instruction set.
-            self.client.packet_handler = Clients.ClientDRO1d0d0
+            self.client.packet_handler = clients.ClientDRO1d0d0
             self.client.bad_version = True
 
         self.client.send_command('FL', 'yellowtext', 'customobjections', 'flipping',
@@ -740,7 +745,7 @@ class AOProtocol(asyncio.Protocol):
             # We have to use fallback protocols for AO2d6 like clients, because if for whatever
             # reason if they don't set an in-client showname, they send less arguments. In
             # particular, they behave like Legacy DRO.
-            pargs = self.process_arguments('MC', args, fallback_protocols=[Clients.ClientDROLegacy])
+            pargs = self.process_arguments('MC', args, fallback_protocols=[clients.ClientDROLegacy])
             if not pargs:
                 return
 

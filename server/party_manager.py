@@ -439,13 +439,14 @@ class PartyManager:
                         error = AreaError('', code='ChArRestrictedChar')
                         raise error
 
-                    new_cid, _ = member.check_change_area(new_area, more_unavail_chars=new_chars)
-                    new_chars.add(new_cid)
+                    new_char_id, _ = member.check_change_area(new_area,
+                                                              more_unavail_chars=new_chars)
+                    new_chars.add(new_char_id)
                 except (ClientError, AreaError) as ex:
                     error = ex
-                    new_cid = member.char_id
+                    new_char_id = member.char_id
             else:
-                new_cid = member.char_id
+                new_char_id = member.char_id
 
             if error:
                 if error.code in ['ChArHandicap', 'ChArSneakLobby', 'ChArSneakPrivate',
@@ -456,13 +457,13 @@ class PartyManager:
 
                 if error.code in ['ChArLocked', 'ChArGMLocked', 'ChArModLocked',
                                   'ChArRestrictedChar', 'ChArInArea']:
-                    movers[False][member] = new_cid
+                    movers[False][member] = new_char_id
                 elif error.code is not None:
                     raise error
                 else:
-                    movers[True][member] = new_cid
+                    movers[True][member] = new_char_id
             else:
-                movers[attempt_move][member] = new_cid
+                movers[attempt_move][member] = new_char_id
 
         return movers
 

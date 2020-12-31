@@ -19,11 +19,12 @@
 import datetime
 import time
 
+from server import clients
 from server import client_changearea
 from server import fantacrypt
 from server import logger
 from server.exceptions import AreaError, ClientError, GameError, PartyError, TrialError
-from server.constants import TargetType, Constants, Clients
+from server.constants import TargetType, Constants
 from server.subscriber import Publisher
 
 
@@ -38,7 +39,7 @@ class ClientManager:
             self.can_join = 0  # Needs to be 2 to actually connect
             self.can_askchaa = True  # Needs to be true to process an askchaa packet
             self.version = ('Undefined', 'Undefined')  # AO version used established through ID pack
-            self.packet_handler = Clients.ClientDRO1d0d0
+            self.packet_handler = clients.ClientDRO1d0d0
             self.bad_version = False
             self.publisher = Publisher(self)
 
@@ -185,8 +186,15 @@ class ClientManager:
 
             final_dargs = dict()
             to_send = list()
-
-            outbound_args = self.packet_handler['{}_OUTBOUND'.format(identifier.upper())].value
+            idn = f'{identifier.upper()}_OUTBOUND'
+            try:
+                outbound_args = self.packet_handler[idn].value
+            except KeyError:
+                try:
+                    outbound_args = clients.DefaultAO2Protocol[idn].value
+                except KeyError:
+                    err = f'No matching protocol found for {idn}.'
+                    raise KeyError(err)
 
             for (field, default_value) in outbound_args:
                 try:
@@ -409,7 +417,7 @@ class ClientManager:
                          not pargs['msg'] in allowed_messages) or
                         (sender and sender.is_gagged and gag_replaced)):
                         pargs['msg'] = '(Your ears are ringing)'
-                        if self.send_deaf_space and self.packet_handler != Clients.ClientDRO1d0d0:
+                        if self.send_deaf_space and self.packet_handler != clients.ClientDRO1d0d0:
                             pargs['msg'] = pargs['msg'] + ' '
                         self.send_deaf_space = not self.send_deaf_space
 
@@ -418,7 +426,7 @@ class ClientManager:
                 # around old client bug
                 if sender and sender.multi_ic and sender.multi_ic_pre:
                     if pargs['msg'].startswith(sender.multi_ic_pre):
-                        if self != sender or sender.packet_handler == Clients.ClientDRO1d0d0:
+                        if self != sender or sender.packet_handler == clients.ClientDRO1d0d0:
                             pargs['msg'] = pargs['msg'].replace(sender.multi_ic_pre, '', 1)
 
                 # Modify shownames as needed
@@ -494,7 +502,7 @@ class ClientManager:
             self.send_ic(msg='(Something catches your attention)', ding=1)
 
         def send_ic_blankpost(self):
-            if self.packet_handler == Clients.ClientDRO1d0d0:
+            if self.packet_handler == clients.ClientDRO1d0d0:
                 self.send_ic(msg='', bypass_replace=True)
 
         def send_background(self, name=None, pos=None):
@@ -658,7 +666,7 @@ class ClientManager:
             else:
                 raw_music_list = self.music_list
 
-            if self.packet_handler not in [Clients.ClientAO2d8d4, Clients.ClientKFO2d8]:
+            if self.packet_handler not in [clients.ClientAO2d8d4, clients.ClientKFO2d8]:
                 # DRO and AO2.6< protocol
                 reloaded_music_list = self.server.build_music_list(from_area=self.area, c=self,
                                                                    music_list=raw_music_list)
