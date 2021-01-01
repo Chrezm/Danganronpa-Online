@@ -25,6 +25,7 @@ import time
 from server.constants import Constants
 from server.exceptions import ServerError
 
+
 class Tasker:
     def __init__(self, server, loop):
         """
@@ -171,7 +172,6 @@ class Tasker:
 
         self.client_tasks[client.id][args[0]][2][attr] = value
 
-
     ###
     # CURRENTLY SUPPORTED TASKS
     ###
@@ -190,17 +190,16 @@ class Tasker:
             except KeyboardInterrupt:
                 raise
 
-
     async def as_afk_kick(self, client, args):
         afk_delay, afk_sendto = args
         try:
-            delay = int(afk_delay)*60 # afk_delay is in minutes, so convert to seconds
+            delay = int(afk_delay)*60  # afk_delay is in minutes, so convert to seconds
         except (TypeError, ValueError):
             info = ('The area file contains an invalid AFK kick delay for area {}: {}'.
                     format(client.area.id, afk_delay))
             raise ServerError(info)
 
-        if delay <= 0: # Assumes 0-minute delay means that AFK kicking is disabled
+        if delay <= 0:  # Assumes 0-minute delay means that AFK kicking is disabled
             return
 
         try:
@@ -214,11 +213,11 @@ class Tasker:
                 info = ('The area file contains an invalid AFK kick destination area for area {}: '
                         '{}'.format(client.area.id, afk_sendto))
                 raise ServerError(info)
-            if client.area.id == afk_sendto: # Don't try and kick back to same area
+            if client.area.id == afk_sendto:  # Don't try and kick back to same area
                 return
-            if client.char_id < 0: # Assumes spectators are exempted from AFK kicks
+            if client.char_id < 0:  # Assumes spectators are exempted from AFK kicks
                 return
-            if client.is_staff(): # Assumes staff are exempted from AFK kicks
+            if client.is_staff():  # Assumes staff are exempted from AFK kicks
                 return
 
             try:
@@ -227,16 +226,16 @@ class Tasker:
                 client.change_area(area, override_passages=True, override_effects=True,
                                    ignore_bleeding=True)
             except Exception:
-                pass # Server raised an error trying to perform the AFK kick, ignore AFK kick
+                pass  # Server raised an error trying to perform the AFK kick, ignore AFK kick
             else:
                 client.send_ooc('You were kicked from area {} to area {} for being inactive for '
                                 '{} minutes.'.format(original_area.id, afk_sendto, afk_delay))
 
                 if client.area.is_locked or client.area.is_modlocked:
-                    try: # Try and remove the IPID from the area's invite list
+                    try:  # Try and remove the IPID from the area's invite list
                         client.area.invite_list.pop(client.ipid)
                     except KeyError:
-                        pass # Would only happen if they joined the locked area through mod powers
+                        pass  # Would only happen if they joined the locked area through mod powers
 
                 if client.party:
                     p = client.party
@@ -250,10 +249,9 @@ class Tasker:
         hour = hour_start
         minute_at_interruption = 0
         time_started_at = time.time()
-        time_refreshed_at = time.time()  # Does not need initialization, but PyLint complains otherwise
+        time_refreshed_at = time.time()  # Doesnt need init, but PyLint complains otherwise
         periods = list()
         force_period_refresh = False
-        unknown_time = False
         current_period = (None, None)
         notify_normies = False
 
@@ -517,12 +515,12 @@ class Tasker:
                     raise ValueError(f'Unknown refresh reason {refresh_reason} for day cycle.')
 
     async def as_effect(self, client, args):
-        _, length, effect, new_value = args # Length in seconds, already converted
+        _, length, effect, new_value = args  # Length in seconds, already converted
 
         try:
             await asyncio.sleep(length)
         except asyncio.CancelledError:
-            pass # Cancellation messages via send_oocs must be sent manually
+            pass  # Cancellation messages via send_oocs must be sent manually
         else:
             if new_value:
                 client.send_ooc('The effect `{}` kicked in.'.format(effect.name))
@@ -554,7 +552,7 @@ class Tasker:
         try:
             await asyncio.sleep(length)
         except asyncio.CancelledError:
-            pass # Cancellation messages via send_oocs must be sent manually
+            pass  # Cancellation messages via send_oocs must be sent manually
         else:
             if announce_if_over and not client.is_staff():
                 client.send_ooc('Your movement handicap has expired. You may move to a new area.')
@@ -587,7 +585,7 @@ class Tasker:
             try:
                 await asyncio.sleep(length)
             except asyncio.CancelledError:
-                break # Cancellation messages via send_oocs must be sent manually
+                break  # Cancellation messages via send_oocs must be sent manually
             else:
                 if client.is_gagged:
                     client.send_ooc_others('(X) Gagged player {} has not attempted to speak in the '
@@ -605,4 +603,3 @@ class Tasker:
                     client.send_ooc_others('{} is being tightlipped.'.format(client.displayname),
                                            is_zstaff_flex=False, in_area=True,
                                            pred=lambda c: not (c.is_blind and c.is_deaf))
-

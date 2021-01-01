@@ -17,7 +17,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import re
 
 from time import localtime, strftime
 
@@ -128,7 +127,8 @@ class AOProtocol(asyncio.Protocol):
         """
 
         self.client = self.server.new_client(transport, my_protocol=my_protocol)
-        self.ping_timeout = asyncio.get_event_loop().call_later(self.server.config['timeout'], self.client.disconnect)
+        self.ping_timeout = asyncio.get_event_loop().call_later(self.server.config['timeout'],
+                                                                self.client.disconnect)
         self.client.send_command_dict('decryptor', {
             'key': 34,  # just fantacrypt things
             })
@@ -946,11 +946,11 @@ class AOProtocol(asyncio.Protocol):
                           .format(self.client.get_ip(), self.client.area.id,
                                   self.client.get_char_name()))
 
-    def net_cmd_re(self, args):
+    def net_cmd_re(self, _):
         # Ignore packet
         return
 
-    def net_cmd_pw(self, args):
+    def net_cmd_pw(self, _):
         # Ignore packet
         # For now, TsuserverDR will not implement a character password system
         # However, so that it stops raising errors for clients, an empty method is implemented
@@ -967,11 +967,11 @@ class AOProtocol(asyncio.Protocol):
 
         self.client.change_position(args[0])
 
-    def net_cmd_opKICK(self, args):
+    def net_cmd_opKICK(self, _):
         # Ignore packet
         return
 
-    def net_cmd_opBAN(self, args):
+    def net_cmd_opBAN(self, _):
         # Ignore packet
         return
 
@@ -994,8 +994,8 @@ class AOProtocol(asyncio.Protocol):
         'DE': net_cmd_de,  # delete evidence
         'EE': net_cmd_ee,  # edit evidence
         'ZZ': net_cmd_zz,  # call mod button
-        'RE': net_cmd_re,  # ??? (Unsupported)
-        'PW': net_cmd_pw,  # character password (only on CC/KFO clients)
-        'opKICK': net_cmd_opKICK,  # /kick with guard on
-        'opBAN': net_cmd_opBAN,  # /ban with guard on
+        'RE': net_cmd_re,  # ??? (Unsupported, deprecated)
+        'PW': net_cmd_pw,  # character password (only on CC/KFO clients, deprecated)
+        'opKICK': net_cmd_opKICK,  # /kick with guard on, deprecated
+        'opBAN': net_cmd_opBAN,  # /ban with guard on, deprecated
     }
