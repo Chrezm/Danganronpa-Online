@@ -340,7 +340,7 @@ class AreaManager:
 
         def is_char_available(self, char_id, allow_restricted=False, more_unavail_chars=None):
             """
-            Dechar_ide whether a character can be selected in the current area.
+            Decide whether a character can be selected in the current area.
 
             Parameters
             ----------
@@ -1119,7 +1119,7 @@ class AreaManager:
             self.server.default_area = 0
 
         for area in old_areas:
-            # Dechar_ide whether the area still exists or not
+            # Decide whether the area still exists or not
             try:
                 new_area = self.get_area_by_name(area.name)
                 remains = True
